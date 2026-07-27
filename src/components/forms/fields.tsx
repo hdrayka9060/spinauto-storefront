@@ -1,5 +1,8 @@
 import {
+  cloneElement,
   InputHTMLAttributes,
+  isValidElement,
+  ReactElement,
   ReactNode,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
@@ -15,19 +18,26 @@ export function Field({
   required,
   children,
   className,
+  name,
 }: {
   label: string;
   required?: boolean;
   children: ReactNode;
   className?: string;
+  /** When set, the field's value is captured under this key on submit. */
+  name?: string;
 }) {
+  const control =
+    name && isValidElement(children)
+      ? cloneElement(children as ReactElement<Record<string, unknown>>, { name })
+      : children;
   return (
     <label className={cn("block", className)}>
       <span className="mb-1.5 block text-sm text-body">
         {label}
         {required && <span className="text-brand-red"> *</span>}
       </span>
-      {children}
+      {control}
     </label>
   );
 }
@@ -38,6 +48,34 @@ export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
 
 export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea {...props} className={cn(inputCls, props.className)} />;
+}
+
+// Chars a phone number may legitimately contain: digits + separators. Anything
+// else (letters especially) is stripped as the user types or pastes.
+const PHONE_ALLOWED = /[^0-9+()\-\s]/g;
+
+/**
+ * Phone field that accepts numeric values only (digits plus + ( ) - and space).
+ * Letters are blocked: the value is sanitised on every input event — including
+ * paste and drag — so an uncontrolled <form> can never capture alphabetic
+ * characters. Renders a tel keypad on mobile.
+ */
+export function PhoneInput(props: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      type="tel"
+      inputMode="tel"
+      autoComplete="tel"
+      onInput={(e) => {
+        const el = e.currentTarget;
+        const cleaned = el.value.replace(PHONE_ALLOWED, "");
+        if (cleaned !== el.value) el.value = cleaned;
+        props.onInput?.(e);
+      }}
+      className={cn(inputCls, props.className)}
+    />
+  );
 }
 
 export function SelectInput({ children, className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {

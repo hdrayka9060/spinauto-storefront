@@ -56,7 +56,7 @@ export default function HeroCarousel() {
         <div className="text-center">
           <p className="font-display text-3xl text-white">Welcome To</p>
           <h1 className="mt-3 font-display text-6xl font-bold uppercase tracking-[0.15em] text-white">
-            Spin Auto Ltd.
+Spin Auto Car And Truck Sales
           </h1>
         </div>
       </div>

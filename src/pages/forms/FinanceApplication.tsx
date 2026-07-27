@@ -1,9 +1,14 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import FormPageLayout from "@/components/forms/FormPageLayout";
-import { Field, TextInput, SelectInput, FormSection, YesNo, SubmittedNotice } from "@/components/forms/fields";
+import { Field, TextInput, PhoneInput, SelectInput, FormSection, YesNo, SubmittedNotice } from "@/components/forms/fields";
+import VehiclePicker from "@/components/forms/VehiclePicker";
+import { useInquiry } from "@/hooks/use-inquiry";
+import { useInventory } from "@/hooks/use-inventory";
+import type { Vehicle } from "@/data/vehicles";
 import {
-  PROVINCES,
+  CA_PROVINCES,
+  US_STATES,
   SALUTATIONS,
   GENDERS,
   MARITAL,
@@ -23,13 +28,41 @@ const opts = (arr: string[]) => (
   </>
 );
 
+const provinceOptions = () => (
+  <>
+    <option value="">Select…</option>
+    <optgroup label="Canada">
+      {CA_PROVINCES.map((p) => (
+        <option key={p} value={p}>
+          {p}
+        </option>
+      ))}
+    </optgroup>
+    <optgroup label="United States">
+      {US_STATES.map((s) => (
+        <option key={s} value={s}>
+          {s}
+        </option>
+      ))}
+    </optgroup>
+  </>
+);
+
 export default function FinanceApplication() {
-  const [submitted, setSubmitted] = useState(false);
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const [sp] = useSearchParams();
+  const { vehicles } = useInventory();
+  const [selected, setSelected] = useState<Vehicle | null>(null);
+
+  // Pre-select the vehicle when arriving from a car's "Apply for Financing" CTA.
+  useEffect(() => {
+    const id = sp.get("vehicle");
+    if (id && !selected) {
+      const v = vehicles.find((x) => x.id === id);
+      if (v) setSelected(v);
+    }
+  }, [vehicles, sp, selected]);
+
+  const { submitting, submitted, error, onSubmit, reset } = useInquiry("financing", { vehicleId: selected?.id });
 
   return (
     <FormPageLayout
@@ -40,117 +73,117 @@ export default function FinanceApplication() {
       {submitted ? (
         <SubmittedNotice
           message="Your credit application has been received. A member of our finance team will contact you shortly."
-          onReset={() => setSubmitted(false)}
+          onReset={reset}
         />
       ) : (
-        <form onSubmit={onSubmit} noValidate={false}>
+        <form onSubmit={onSubmit}>
           <FormSection title="Personal Information">
-            <Field label="Salutation">
+            <Field label="Salutation" name="salutation">
               <SelectInput>{opts(SALUTATIONS)}</SelectInput>
             </Field>
-            <Field label="Gender">
+            <Field label="Gender" name="gender">
               <SelectInput>{opts(GENDERS)}</SelectInput>
             </Field>
-            <Field label="First Name" required>
+            <Field label="First Name" required name="firstName">
               <TextInput required />
             </Field>
-            <Field label="Last Name" required>
+            <Field label="Last Name" required name="lastName">
               <TextInput required />
             </Field>
-            <Field label="Phone" required>
-              <TextInput type="tel" required />
+            <Field label="Phone" required name="phone">
+              <PhoneInput required />
             </Field>
-            <Field label="Email" required>
+            <Field label="Email" required name="email">
               <TextInput type="email" required />
             </Field>
-            <Field label="Marital Status" required>
+            <Field label="Marital Status" required name="maritalStatus">
               <SelectInput required>{opts(MARITAL)}</SelectInput>
             </Field>
-            <Field label="Birth Date" required>
+            <Field label="Birth Date" required name="birthDate">
               <TextInput type="date" required />
             </Field>
-            <Field label="SIN">
+            <Field label="SIN" name="sin">
               <TextInput inputMode="numeric" />
             </Field>
           </FormSection>
 
           <FormSection title="Current Address">
-            <Field label="Address" required className="sm:col-span-2">
+            <Field label="Address" required className="sm:col-span-2" name="address">
               <TextInput required />
             </Field>
-            <Field label="City" required>
+            <Field label="City" required name="city">
               <TextInput required />
             </Field>
-            <Field label="Province" required>
-              <SelectInput required>{opts(PROVINCES)}</SelectInput>
+            <Field label="Province / State" required name="province">
+              <SelectInput required>{provinceOptions()}</SelectInput>
             </Field>
-            <Field label="Postal code" required>
+            <Field label="Postal code" required name="postalCode">
               <TextInput required />
             </Field>
-            <Field label="Duration (years)" required>
+            <Field label="Duration (years)" required name="addressDurationYears">
               <TextInput type="number" min={0} required />
             </Field>
-            <Field label="Duration (months)" required>
+            <Field label="Duration (months)" required name="addressDurationMonths">
               <TextInput type="number" min={0} max={11} required />
             </Field>
           </FormSection>
 
           <FormSection title="Home Rent / Mortgage Information">
-            <Field label="Home Status" required>
+            <Field label="Home Status" required name="homeStatus">
               <SelectInput required>{opts(HOME_STATUS)}</SelectInput>
             </Field>
-            <Field label="Monthly payment" required>
+            <Field label="Monthly payment" required name="monthlyPayment">
               <TextInput type="number" min={0} required />
             </Field>
           </FormSection>
 
           <FormSection title="Current Employment">
-            <Field label="Type" required>
+            <Field label="Type" required name="employmentType">
               <SelectInput required>{opts(EMPLOYMENT_TYPE)}</SelectInput>
             </Field>
-            <Field label="Employer" required>
+            <Field label="Employer" required name="employer">
               <TextInput required />
             </Field>
-            <Field label="Occupation" required>
+            <Field label="Occupation" required name="occupation">
               <TextInput required />
             </Field>
-            <Field label="Employment Address" required className="sm:col-span-2">
+            <Field label="Employment Address" required className="sm:col-span-2" name="employmentAddress">
               <TextInput required />
             </Field>
-            <Field label="City" required>
+            <Field label="City" required name="employmentCity">
               <TextInput required />
             </Field>
-            <Field label="Province" required>
-              <SelectInput required>{opts(PROVINCES)}</SelectInput>
+            <Field label="Province / State" required name="employmentProvince">
+              <SelectInput required>{provinceOptions()}</SelectInput>
             </Field>
-            <Field label="Postal Code" required>
+            <Field label="Postal Code" required name="employmentPostalCode">
               <TextInput required />
             </Field>
-            <Field label="Phone" required>
-              <TextInput type="tel" required />
+            <Field label="Phone" required name="employmentPhone">
+              <PhoneInput required />
             </Field>
-            <Field label="Duration (years)" required>
+            <Field label="Duration (years)" required name="employmentDurationYears">
               <TextInput type="number" min={0} required />
             </Field>
-            <Field label="Duration (months)" required>
+            <Field label="Duration (months)" required name="employmentDurationMonths">
               <TextInput type="number" min={0} max={11} required />
             </Field>
-            <Field label="Gross Income" required>
+            <Field label="Gross Income" required name="grossIncome">
               <TextInput type="number" min={0} required />
             </Field>
           </FormSection>
 
           <FormSection title="Previous Employment">
-            <Field label="Previous Employer">
+            <Field label="Previous Employer" name="previousEmployer">
               <TextInput />
             </Field>
-            <Field label="Phone">
-              <TextInput type="tel" />
+            <Field label="Phone" name="previousEmployerPhone">
+              <PhoneInput />
             </Field>
-            <Field label="Duration (years)">
+            <Field label="Duration (years)" name="previousDurationYears">
               <TextInput type="number" min={0} />
             </Field>
-            <Field label="Duration (months)">
+            <Field label="Duration (months)" name="previousDurationMonths">
               <TextInput type="number" min={0} max={11} />
             </Field>
           </FormSection>
@@ -159,23 +192,33 @@ export default function FinanceApplication() {
             <YesNo label="Previous Bankruptcy?" name="bankruptcy" />
             <YesNo label="Previous Repossession?" name="repossession" />
             <YesNo label="Is Co-signer Available?" name="cosigner" />
-            <Field label="Please rate your credit">
+            <Field label="Please rate your credit" name="creditRating">
               <SelectInput>{opts(CREDIT_RATING)}</SelectInput>
             </Field>
             <Field label="Choose Your Vehicle" className="sm:col-span-2">
-              <TextInput placeholder="Search inventory or enter a vehicle of interest" />
+              <VehiclePicker vehicles={vehicles} value={selected} onChange={setSelected} />
             </Field>
-            <Link to="/cars" className="text-sm text-brand-red hover:underline sm:col-span-2">
-              Advanced Search →
-            </Link>
+            {selected && (
+              <input
+                type="hidden"
+                name="vehicleOfInterest"
+                value={`${selected.year} ${selected.make} ${selected.model} (Stock ${selected.stock})`}
+              />
+            )}
           </FormSection>
 
           <p className="mt-6 text-xs text-white/50">
             Disclaimer: By submitting this application, you authorize us to run your credit report.
           </p>
 
-          <button type="submit" className="btn-red mt-6 w-full sm:w-auto">
-            Get Approved
+          {error && (
+            <p className="mt-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+              {error}
+            </p>
+          )}
+
+          <button type="submit" disabled={submitting} className="btn-red mt-6 w-full disabled:opacity-60 sm:w-auto">
+            {submitting ? "Submitting…" : "Get Approved"}
           </button>
         </form>
       )}

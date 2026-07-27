@@ -1,75 +1,63 @@
 # Spin Auto Ltd — Storefront
 
-A pixel-accurate recreation of the public [spinauto.ca](https://spinauto.ca/) dealership website, built as a **standalone** front-end app. It is part of the wider CDMS ecosystem (sibling to `cdms-backend` and the `spark-auto-suite` admin app) but ships independently.
+A pixel-accurate, **backend-integrated** recreation of the public [spinauto.ca](https://spinauto.ca/) dealership website. Standalone front-end (Vite + React + TS + Tailwind) that consumes the existing NestJS **`cdms-backend`**. Desktop + mobile, dark theme.
 
-- **Status:** Phase 1 (visual clone) complete — all pages, responsive desktop + mobile, dummy data.
-- **Next:** Phase 2 — wire inventory to the CDMS backend and route form submissions into the `leads` collection.
-
-## Tech stack
-
-- **Vite** + **React 18** + **TypeScript**
-- **Tailwind CSS** (dark theme, design tokens in `tailwind.config.ts`)
-- **react-router-dom** (routing)
-- **embla-carousel-react** (hero carousel)
-- **lucide-react** (icons)
-- Fonts: **Play** (headings) + **Roboto** (body), loaded via Google Fonts
-- `react-hook-form` + `zod` are installed for Phase-2 form validation (forms currently use native HTML5 validation)
+> **Status:** Phases 0–2 complete and verified — full visual clone, live inventory, working lead capture, comparison, faceted filtering, finance calculator.
+> **📄 For a full status + how-to-continue guide, read [`../docs/spinauto-clone/HANDOFF.md`](../docs/spinauto-clone/HANDOFF.md).**
 
 ## Getting started
 
+Run the backend and the storefront together:
+
 ```bash
-npm install
-npm run dev      # http://localhost:5175
+# 1) Backend (NestJS) — port 3000
+cd ../cdms-backend && npm run start:dev
+
+# 2) Storefront — port 5175
+npm install       # first time only
+npm run dev       # http://localhost:5175
 ```
 
-### Scripts
+Config: `.env` → `VITE_API_BASE_URL=http://localhost:3000/api/v1`. If the backend is unreachable, the site falls back to bundled sample inventory (`src/data/vehicles.ts`).
 
+### Scripts
 | Command | Description |
 |---|---|
-| `npm run dev` | Start the Vite dev server on port **5175** |
-| `npm run build` | Type-check and build to `dist/` |
+| `npm run dev` | Vite dev server on port **5175** |
+| `npm run build` | Type-check + build to `dist/` |
 | `npm run preview` | Preview the production build |
+
+## Tech stack
+
+Vite · React 18 · TypeScript · Tailwind (tokens in `tailwind.config.ts`) · react-router-dom · embla-carousel · lucide-react · fonts **Play** (headings) + **Roboto** (body). No component library — plain components + Tailwind.
+
+## Backend integration
+
+- **Inventory:** `GET /api/v1/website/inventory` (returns `unsold` + `sold` vehicles) and `/website/inventory/:id`. Mapped in `src/lib/vehicle-mapper.ts` (`company`→make, `km`→mileage, `vehicleNumber`→stock, `bodyType`→bodyStyle, `color`→exteriorColor, `photos[]`→images).
+- **Leads:** every form POSTs to `POST /api/v1/website/inquiry` (public endpoint added to the backend) → creates a CRM BuyerLead + `source: website` Lead, linked to a vehicle when one is selected.
+- See the HANDOFF doc for the exact list of `cdms-backend` changes (new endpoint, schema fields, CORS, cleanup script).
 
 ## Project structure
 
 ```
 src/
-  App.tsx                 # Routes
-  main.tsx                # Entry (BrowserRouter)
-  index.css               # Tailwind + base styles + component classes
+  App.tsx                 # Routes (+ CompareProvider)
   components/
-    layout/               # SiteShell, SiteHeader (nav + mobile drawer), Footer
+    layout/               # SiteShell, SiteHeader (nav + drawer), Footer, Logo
     home/                 # HeroSection, HeroCarousel, InventorySearch, FeatureTiles, WelcomeBand, FinancingCTA, LocationBand
-    inventory/            # VehicleCard, FilterGroups
-    forms/                # FormPageLayout, ContactSidebar, fields (Field/TextInput/SelectInput/…)
+    inventory/            # VehicleCard, FilterGroups, CompareBar
+    forms/                # FormPageLayout, ContactSidebar, fields, VehiclePicker
   pages/
-    Home.tsx  Inventory.tsx  VehicleDetail.tsx
-    Service.tsx  About.tsx  Directions.tsx  Privacy.tsx
-    forms/                # FinanceApplication, CarFinder, BookAppointment
-  data/
-    site.ts               # Business info (name, address, phone, hours, map embed)
-    vehicles.ts           # Dummy inventory (shape mirrors CDMS Vehicle contract)
-    form-options.ts       # Select options (provinces, employment, etc.)
-  lib/
-    seo.ts                # useRouteSeo() — per-route <title>/description/OG tags
-    utils.ts              # cn() helper
-public/assets/            # Logo, hero slides, tile images (captured from live site)
+    Home, Inventory, VehicleDetail, Compare, FinanceDepartment, About, Directions, Privacy, Service
+    forms/                # FinanceApplication, FinanceCalculator, CarFinder, BookAppointment, ContactUs, TextUsNow
+  hooks/                  # use-inventory, use-inquiry
+  lib/                    # api, vehicle-mapper, inquiry, compare-context, seo, utils
+  data/                   # site (business info + nav), vehicles (fallback), form-options
 ```
 
 ## Routes
 
-| Path | Page |
-|---|---|
-| `/` | Home |
-| `/cars` | Inventory (filter + sort) |
-| `/cars/:id` | Vehicle detail |
-| `/finance`, `/forms/financing` | Finance application |
-| `/forms/car-finder` | Car finder |
-| `/forms/book-appointment` | Book appointment |
-| `/service` | Book service appointment |
-| `/about-us` | About us |
-| `/directions` | Directions + map |
-| `/privacy` | Privacy & policy |
+`/` · `/cars` · `/cars/:id` · `/compare` · `/finance` · `/forms/financing` · `/forms/finance-calculator` · `/forms/car-finder` · `/forms/book-appointment` · `/forms/contact-us` · `/forms/text-us-now` · `/service` · `/about-us` · `/directions` · `/privacy`
 
 ## Design tokens
 
@@ -77,12 +65,11 @@ public/assets/            # Logo, hero slides, tile images (captured from live s
 |---|---|---|
 | `bg` | `#222222` | Page background |
 | black | `#000` | Header / nav / footer |
-| `brand-red` | `#DB2526` | Active nav, primary CTAs |
+| `brand-red` | `#DB2526` | Active nav, primary CTAs, SOLD ribbon |
 | `brand-red-dark` | `#B41A1A` | Secondary / hover |
-| text | `#E8E8E8` | Body text (headings white) |
+| text | `#E8E8E8` | Body (headings white) |
 
-## Notes
+## Reference
 
-- **Dummy data:** inventory lives in `src/data/vehicles.ts`; vehicle photos are placeholders until the backend feed is wired (Phase 2 → `/api/v1/website/inventory`).
-- **Forms:** submit to a local success state only; Phase 2 will POST to the CDMS `leads` collection.
-- **Design reference:** the full capture of the live site (layouts, copy, form fields, assets) lives in `../docs/spinauto-clone/design-reference.md`.
+- Original-site capture (layouts, copy, form fields, assets): [`../docs/spinauto-clone/design-reference.md`](../docs/spinauto-clone/design-reference.md)
+- Status + continue-here guide: [`../docs/spinauto-clone/HANDOFF.md`](../docs/spinauto-clone/HANDOFF.md)

@@ -18,7 +18,7 @@ export default function HeroSection() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                navigate("/cars");
+                navigate(`/cars${kw.trim() ? `?q=${encodeURIComponent(kw.trim())}` : ""}`);
               }}
               className="pointer-events-auto flex items-stretch gap-1 shadow-2xl"
             >

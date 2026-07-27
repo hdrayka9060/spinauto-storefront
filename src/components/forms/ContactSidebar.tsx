@@ -46,12 +46,12 @@ export default function ContactSidebar() {
         >
           Inventory
         </Link>
-        <a
-          href={site.phoneHref}
+        <Link
+          to="/forms/contact-us"
           className="flex-1 border border-white/40 py-2.5 text-center text-sm text-white transition-colors hover:bg-white hover:text-ink"
         >
           Contact us
-        </a>
+        </Link>
       </div>
     </aside>
   );

@@ -4,9 +4,11 @@ export const site = {
   address: "12705 118 St NW, EDMONTON, AB, T5E 5K9",
   phone: "780-902-4177",
   phoneHref: "tel:7809024177",
-  // Keyless Google Maps embed centred on the dealership.
+  // Keyless Google Maps embed. Querying the business name shows the labelled
+  // "Spin Auto Car And Truck Sales" marker (matching the live site) rather than
+  // just a bare address pin.
   mapEmbed:
-    "https://maps.google.com/maps?q=12705%20118%20St%20NW%2C%20Edmonton%2C%20AB&t=&z=15&ie=UTF8&iwloc=&output=embed",
+    "https://maps.google.com/maps?q=Spin+Auto+Car+And+Truck+Sales,+12705+118+St+NW,+Edmonton,+AB&t=&z=15&ie=UTF8&iwloc=&output=embed",
 };
 
 export const hours: { day: string; time: string }[] = [
@@ -30,8 +32,8 @@ export const navItems: NavItem[] = [
     to: "/finance",
     children: [
       { label: "Finance Application", to: "/forms/financing" },
-      { label: "Car Finder", to: "/forms/car-finder" },
-      { label: "Book Appointment", to: "/forms/book-appointment" },
+      { label: "Finance Calculator", to: "/forms/finance-calculator" },
+      { label: "Finance Department", to: "/finance" },
     ],
   },
   { label: "Service", to: "/service" },
@@ -40,7 +42,9 @@ export const navItems: NavItem[] = [
     to: "/about-us",
     children: [
       { label: "About Us", to: "/about-us" },
-      { label: "Get Directions", to: "/directions" },
+      { label: "Contact Us", to: "/forms/contact-us" },
+      { label: "Text Us Now", to: "/forms/text-us-now" },
+      { label: "Directions", to: "/directions" },
     ],
   },
 ];

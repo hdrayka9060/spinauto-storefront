@@ -58,8 +58,7 @@ export default function Footer() {
             © 2026 {site.legalName} |{" "}
             <Link to="/privacy" className="transition-colors hover:text-white">
               Privacy &amp; Policy
-            </Link>{" "}
-            | Powered by Hillz
+            </Link>
           </p>
         </div>
       </div>

@@ -14,6 +14,15 @@ export type Vehicle = {
   stock: string;
   bodyStyle: string;
   images: string[];
+  description?: string;
+  discount?: number;
+  status?: string;
+  exteriorColor?: string;
+  interiorColor?: string;
+  engineSize?: string;
+  doors?: number;
+  owners?: number;
+  features?: string[];
 };
 
 /**

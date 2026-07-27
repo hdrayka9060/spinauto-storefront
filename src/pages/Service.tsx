@@ -1,15 +1,10 @@
-import { useState } from "react";
 import FormPageLayout from "@/components/forms/FormPageLayout";
-import { Field, TextInput, TextArea, FormSection, SubmittedNotice } from "@/components/forms/fields";
+import { Field, TextInput, PhoneInput, TextArea, FormSection, SubmittedNotice } from "@/components/forms/fields";
+import { useInquiry } from "@/hooks/use-inquiry";
 import { SERVICES } from "@/data/form-options";
 
 export default function Service() {
-  const [submitted, setSubmitted] = useState(false);
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const { submitting, submitted, error, onSubmit, reset } = useInquiry("service");
 
   return (
     <FormPageLayout
@@ -21,42 +16,42 @@ export default function Service() {
         <SubmittedNotice
           title="Request received!"
           message="Thanks for booking. We'll confirm your service appointment availability shortly."
-          onReset={() => setSubmitted(false)}
+          onReset={reset}
         />
       ) : (
         <form onSubmit={onSubmit}>
           <FormSection title="Personal Information">
-            <Field label="First Name" required>
+            <Field label="First Name" required name="firstName">
               <TextInput required />
             </Field>
-            <Field label="Last Name" required>
+            <Field label="Last Name" required name="lastName">
               <TextInput required />
             </Field>
-            <Field label="Email" required>
+            <Field label="Email" required name="email">
               <TextInput type="email" required />
             </Field>
-            <Field label="Phone" required>
-              <TextInput type="tel" required />
+            <Field label="Phone" required name="phone">
+              <PhoneInput required />
             </Field>
           </FormSection>
 
           <FormSection title="Vehicle Information">
-            <Field label="Make">
+            <Field label="Make" name="make">
               <TextInput />
             </Field>
-            <Field label="Model">
+            <Field label="Model" name="model">
               <TextInput />
             </Field>
-            <Field label="VIN">
+            <Field label="VIN" name="vin">
               <TextInput />
             </Field>
-            <Field label="Year">
+            <Field label="Year" name="year">
               <TextInput type="number" min={1950} max={2026} />
             </Field>
           </FormSection>
 
           <FormSection title="Appointment Information" cols={1}>
-            <Field label="Date" required className="sm:max-w-xs">
+            <Field label="Date" required name="date" className="sm:max-w-xs">
               <TextInput type="date" required />
             </Field>
           </FormSection>
@@ -73,11 +68,17 @@ export default function Service() {
           </FormSection>
 
           <FormSection title="Comments" cols={1}>
-            <TextArea rows={4} placeholder="Tell us anything else about your vehicle or the service you need…" />
+            <TextArea name="comments" rows={4} placeholder="Tell us anything else about your vehicle or the service you need…" />
           </FormSection>
 
-          <button type="submit" className="btn-red mt-6 w-full sm:w-auto">
-            Check Availability
+          {error && (
+            <p className="mt-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+              {error}
+            </p>
+          )}
+
+          <button type="submit" disabled={submitting} className="btn-red mt-6 w-full disabled:opacity-60 sm:w-auto">
+            {submitting ? "Checking…" : "Check Availability"}
           </button>
         </form>
       )}
