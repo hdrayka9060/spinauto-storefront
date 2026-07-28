@@ -1,0 +1,19 @@
+# Netlify config for the Spin Auto public storefront (Vite + React SPA).
+#
+# Set this environment variable in the Netlify UI (Site settings → Environment
+# variables) — it points the storefront at the Render backend:
+#   VITE_API_BASE_URL = https://cdms-backend.onrender.com/api/v1
+# (A Netlify env var overrides the committed .env, so localhost stays for dev.)
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA fallback: serve index.html for client-side routes (deep-links / refresh).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
