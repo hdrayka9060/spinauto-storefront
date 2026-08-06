@@ -17,7 +17,7 @@ export const hours: { day: string; time: string }[] = [
   { day: "Wednesday", time: "10:00 AM - 06:00 PM" },
   { day: "Thursday", time: "10:00 AM - 06:00 PM" },
   { day: "Friday", time: "10:00 AM - 06:00 PM" },
-  { day: "Saturday", time: "12:00 PM - 03:00 PM" },
+  { day: "Saturday", time: "12:00 PM - 03:30 PM" },
   { day: "Sunday", time: "Closed" },
 ];
 
